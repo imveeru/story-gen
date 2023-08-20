@@ -24,6 +24,7 @@ from google.oauth2 import service_account
 import google.cloud.aiplatform as aiplatform
 import vertexai
 from vertexai.language_models import TextGenerationModel
+import requests
 
 ##################### Vertext AI & PaLM API initialization #####################
 
@@ -93,7 +94,35 @@ def get_img(story):
     '''
     img=model.predict(prompt,**parameters)
     
-    return img
+    URL="https://stablediffusionapi.com/api/v3/text2img"
+    
+    data='''{
+        "key": "YZrFfkxn54pympdHvz5vqDXg90NGSx4Sgos22HmmokVC4jj4jLX7KP5KdJ1y",
+        "prompt": "",
+        "negative_prompt": "((extra fingers)), mutated hands, ((poorly drawn hands)), ((poorly drawn face)), (((mutation))), (((deformed))), (((tiling))), ((naked)), ((tile)), ((fleshpile)), ((ugly)), (((abstract))), blurry, ((bad anatomy)), ((bad proportions)), ((extra limbs)), cloned face, (((skinny))), glitchy, ((extra breasts)), ((double torso)), ((extra arms)), ((extra hands)), ((mangled fingers)), ((missing breasts)), (missing lips), ((ugly face)), ((extra legs))",
+        "width": "512",
+        "height": "512",
+        "samples": "1",
+        "num_inference_steps": "20",
+        "safety_checker": "no",
+        "enhance_prompt": "yes",
+        "seed": null,
+        "guidance_scale": 7.5,
+        "webhook": null,
+        "track_id": null
+    }'''
+    
+    data=json.loads(data)
+    
+    data["prompt"]=img
+    
+    x = requests.post(URL, json = data)
+    
+    if x.status_code==200:
+        res=x.json()
+        return res
+    else:
+        return "Unexpected error occured!"
     
 
 ##################### User Interface ##################### 
