@@ -81,6 +81,21 @@ parameters = {
 model = TextGenerationModel.from_pretrained("text-bison@001")
 
 
+def get_img(story):
+    prompt=f'''
+    Act as an experienced image prompt generator, think of a detailed description of a key moment or scene that would make for a great illustration for the below given story.
+    Use this description to write a prompt for text-to-image AI to create an image of that moment. All the images must be in a cartoon art or disney style art or painting style.
+    The prompt should be a paragraph containing the following details:
+    Setting, description of surroundings, character name, character age, character gender, character outfit, character look, character action, style of art.
+    Finally, **ONLY OUTPUT THE FINAL IMAGE PROMPT.**.
+    
+    STORY: {story}
+    '''
+    img=model.predict(prompt,**parameters)
+    
+    return img
+    
+
 ##################### User Interface ##################### 
 
 with st.sidebar:
@@ -88,7 +103,7 @@ with st.sidebar:
     name=st.text_input("Child's Name")
     story_type=st.selectbox("Story Type",["Bedtime Story","Moral Story","Fairytale","Adventure","Educational","Mystery",'Science Fiction'])
     age=st.selectbox("Child's Age",["2-4 years","5-7 years","8-10 years","10-12 years","12-14 years"])
-    length=st.select_slider("Story Length",["Short (~400 words)","Medium (~600 words)","Long (~800 words)"])
+    length=st.select_slider("Story Length",["Short (~600 words)","Medium (~800 words)","Long (~1000 words)"])
     idea=st.text_area("If you have any specific ideas, type in here...")
     
     start=st.button("Generate Story!")
@@ -102,11 +117,14 @@ if start:
         prompt=prompt_format(name,story_type,age,length,idea)
         
         with st.spinner("Crafting the perfect story..."):
-            res=model.predict(prompt,**parameters)
+            story=model.predict(prompt,**parameters)
         
-        with st.spinner
-        
-        st.markdown(res)
+        with st.spinner("Painting some art for your story..."):
+            img=get_img(story)
+
+        st.markdown(img)
+        st.divider()
+        st.markdown(story)
         
     else:
         st.warning("Kindly fill all the details before generating the story",icon="⚠️")
