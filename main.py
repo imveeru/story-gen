@@ -72,6 +72,14 @@ def prompt_format(name,type,age,length,idea):
     
     return txt
 
+parameters = {
+    "max_output_tokens": 1024,
+    "temperature": 0.5,
+    "top_p": 0.8,
+    "top_k": 40
+}
+model = TextGenerationModel.from_pretrained("text-bison@001")
+
 
 ##################### User Interface ##################### 
 
@@ -86,3 +94,16 @@ with st.sidebar:
     start=st.button("Generate Story!")
     
 if start:
+
+    if name and story_type and age and length:
+        if idea=="":
+            idea="Nothing much specific. You may assume the details accordingly."
+        
+        prompt=prompt_format(name,story_type,age,length,idea)
+        
+        res=model.predict(prompt,**parameters)
+        
+        st.markdown(res)
+        
+    else:
+        st.warning("Kindly fill all the details before generating the story",icon="⚠️")
