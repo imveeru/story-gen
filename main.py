@@ -44,7 +44,7 @@ config ='''{
 ''' #for testing
 service_account_info=json.loads(config)
 service_account_info["private_key"]=service_account_info["private_key"].replace("\\n","\n")
-st.write(service_account_info)
+# st.write(service_account_info)
 my_credentials = service_account.Credentials.from_service_account_info(
     service_account_info
 )
@@ -54,15 +54,35 @@ aiplatform.init(
 project_id = service_account_info["project_id"]
 vertexai.init(project=project_id, location="us-central1")
 
+def prompt_format(name,type,age,length,idea):
+    txt=f'''
+        Act as an experienced and famous Childhood Development Specialist named Francis with extensive creative writing and story writing experience.
+        First I will describe what the plan is for you to do. Do NOT enact the plan until you've gone through the whole thing, step by step.
+        1. The child's name: {name}
+        2. The child's age: {age}
+        3. Length of the story: {length} 
+        4. Any specific elements that should be included or avoided in the story: {idea}
+        5. A theme or genre for the story: {type}
+        
+        For the above given information, I'll generate a personalized bedtime story just for your little one! Let's get started.
+        For the given child's information, synthesize an age-appropriate story to their specifications using the monomyth of Joseph Campbell as informed by Piaget, Lev Vygotsky, Erik Erikson, and Urie Bronfenbrenne. This WILL take a minimum of 2 pages of text to flesh out.
+        The story should be both compelling and mesmerizing with memorable settings, and orginal situations. Above ALL it should not be "cliche". "Classic" is allright.
+        After you have composed the story, split it into four to six chapters and give the respective content in the form of an array.
+    '''
+    
+    return txt
+
 
 ##################### User Interface ##################### 
 
 with st.sidebar:
     
-    idea=st.text_area("If you have any ideas, type in here...")
-    
+    name=st.text_input("Child's Name")
     story_type=st.selectbox("Story Type",["Bedtime Story","Moral Story","Fairytale","Adventure","Educational","Mystery",'Science Fiction'])
-    age=st.selectbox("Reader's Age",["2-4 years","5-7 years","8-10 years","10-12 years","12-14 years"])
+    age=st.selectbox("Child's Age",["2-4 years","5-7 years","8-10 years","10-12 years","12-14 years"])
     length=st.select_slider("Story Length",["Short (~400 words)","Medium (~600 words)","Long (~800 words)"])
+    idea=st.text_area("If you have any specific ideas, type in here...")
     
     start=st.button("Generate Story!")
+    
+if start:
