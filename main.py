@@ -67,7 +67,7 @@ def prompt_format(name,type,age,length,idea):
         For the above given information, I'll generate a personalized bedtime story just for your little one! Let's get started.
         For the given child's information, synthesize an age-appropriate story to their specifications using the monomyth of Joseph Campbell as informed by Piaget, Lev Vygotsky, Erik Erikson, and Urie Bronfenbrenne. This WILL take a minimum of 2 pages of text to flesh out.
         The story should be both compelling and mesmerizing with memorable settings, and orginal situations. Above ALL it should not be "cliche". "Classic" is allright.
-        After you have composed the story, split it into four to six chapters and give the respective content in the form of an array.
+        Directly print the story. **DO NOT ADD ANY SENTENCE OTHER THAN THE STORY ITSELF**.
     '''
     
     return txt
@@ -101,7 +101,10 @@ if start:
         
         prompt=prompt_format(name,story_type,age,length,idea)
         
-        res=model.predict(prompt,**parameters)
+        with st.spinner("Crafting the perfect story..."):
+            res=model.predict(prompt,**parameters)
+        
+        with st.spinner
         
         st.markdown(res)
         
