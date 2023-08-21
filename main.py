@@ -25,6 +25,7 @@ import google.cloud.aiplatform as aiplatform
 import vertexai
 from vertexai.language_models import TextGenerationModel
 import requests
+import time
 
 ##################### Vertext AI & PaLM API initialization #####################
 
@@ -88,7 +89,7 @@ def get_img(story):
     Use this description to write a prompt for text-to-image AI to create an image of that moment. All the images must be in a cartoon art or disney style art or painting style.
     The prompt should be a paragraph containing the following details:
     Setting, description of surroundings, character name, character age, character gender, character outfit, character look, character action, style of art.
-    Finally, **ONLY OUTPUT THE FINAL IMAGE PROMPT.**.
+    Finally, **ONLY OUTPUT THE FINAL IMAGE PROMPT.** THE FINAL IMAGE PROMPT MUST NOT CONTAIN NEW LINE OR PARAGRAH, IT MUST BE A SINGLE PARAGRAPH.
     
     STORY: {story}
     '''
@@ -112,17 +113,33 @@ def get_img(story):
         "track_id": null
     }'''
     
-    data=json.loads(data)
+    data_json=json.loads(data)
     
-    data["prompt"]=img
+    data_json["prompt"]=img.text.strip()
+
+    # st.write(data_json)
+    # data_json=json.dumps(data_json,default=str)
     
-    x = requests.post(URL, json = data)
+    x = requests.post(URL, json = data_json)
     
-    if x.status_code==200:
-        res=x.json()
-        return res
-    else:
-        return "Unexpected error occured!"
+    response=json.loads(x.text)
+
+    if response["status"]=="success":
+        return response["output"][0]
+    elif response["status"]=="processing":
+        new_req='''{
+            "key":"YZrFfkxn54pympdHvz5vqDXg90NGSx4Sgos22HmmokVC4jj4jLX7KP5KdJ1y",
+            "request_id":""
+        }'''
+        new_data_json=json.loads(new_req)
+        new_data_json["request_id"]=response["id"]
+        
+        with st.spinner("Making the art more beautiful..."):
+            time.sleep(response["eta"])            
+            new_res=requests.post(response["fetch_result"],json=new_data_json)
+            new_res_json=json.loads(new_res.text)
+        
+        return new_res_json["output"][0]
     
 
 ##################### User Interface ##################### 
@@ -151,9 +168,9 @@ if start:
         with st.spinner("Painting some art for your story..."):
             img=get_img(story)
 
-        st.markdown(img)
+        st.image(img)
         st.divider()
-        st.markdown(story)
+        st.markdown(story.text)
         
     else:
         st.warning("Kindly fill all the details before generating the story",icon="⚠️")
